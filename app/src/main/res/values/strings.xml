@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">HippoWeex</string>
+    <string name="main_tab_1">推荐</string>
+    <string name="main_tab_2">消息</string>
+    <string name="main_tab_3">云研圈</string>
+    <string name="main_tab_4">组合</string>
+    <string name="main_tab_5">我的</string>
+
+    <string name="fragment_login_input_findpassword">找回密码</string>
+    <string name="fragment_login_btn_confirm_login">登录</string>
+    <string name="fragment_login_text_fastlogin">快速登录</string>
+    <string name="fragment_login_text_register">注册</string>
+    <string name="fragment_login_input_username_hint">手机号</string>
+    <string name="fragment_login_input_password_hint">密码</string>
+    <string name="fragment_login_input_code_hint">验证码</string>
+
+</resources>

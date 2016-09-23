@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@id/rl_title_bar"
+    android:layout_width="fill_parent"
+    android:layout_height="@dimen/common_title_height"
+    android:fitsSystemWindows="true"
+    android:paddingLeft="@dimen/commen_title_padding"
+    android:paddingRight="@dimen/commen_title_padding"
+    android:background="@color/colorPrimaryDark">
+
+    <TextView
+        android:id="@id/text_title_left"
+        android:drawablePadding="@dimen/commen_title_image_item_padding"
+        android:layout_centerVertical="true"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/commen_title_item_text"
+        android:lines="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+    <TextView
+        android:id="@id/text_title_center"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent"
+        android:layout_centerInParent="true"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:lines="1"
+        android:maxWidth="224.0dip"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/commen_title_item_title" />
+
+    <TextView
+        android:id="@id/text_title_right"
+        android:drawablePadding="@dimen/commen_title_image_item_padding"
+        android:layout_centerVertical="true"
+        android:layout_alignParentRight="true"
+        android:textColor="@android:color/white"
+        android:textSize="@dimen/commen_title_item_text"
+        android:lines="1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"/>
+
+</RelativeLayout>

@@ -1,0 +1,38 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.neenbedankt.android-apt'
+android {
+    compileSdkVersion rootProject.ext.compileSdkVersion
+    buildToolsVersion rootProject.ext.buildToolsVersion
+
+    defaultConfig {
+        applicationId "com.example.hippoweex"
+        minSdkVersion 16
+        minSdkVersion rootProject.ext.minSdk
+        targetSdkVersion rootProject.ext.targetSdk
+        versionCode rootProject.ext.versionCode
+        versionName rootProject.ext.versionName
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    testCompile 'junit:junit:4.12'
+    compile project(':core')
+
+    //依赖注入
+    //Dagger用于解耦
+    apt 'com.google.dagger:dagger-compiler:' + rootProject.ext.dagger2Version
+    //ButterKnife用于绑定View
+    compile 'com.jakewharton:butterknife:' + rootProject.ext.butterknifeVersion
+    apt 'com.jakewharton:butterknife-compiler:' + rootProject.ext.butterknifeVersion
+    //注解适配器
+    compile 'com.hannesdorfmann.annotatedadapter:annotation:' + rootProject.ext.annotatedAdapter
+    compile 'com.hannesdorfmann.annotatedadapter:support-recyclerview:' + rootProject.ext.annotatedAdapter
+    apt 'com.hannesdorfmann.annotatedadapter:processor:' + rootProject.ext.annotatedAdapter
+}

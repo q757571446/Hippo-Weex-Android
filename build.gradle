@@ -1,0 +1,58 @@
+// Top-level build file where you can add configuration options common to all sub-projects/modules.
+
+buildscript {
+    repositories {
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:2.1.0'
+        classpath 'com.neenbedankt.gradle.plugins:android-apt:1.8'
+        // NOTE: Do not place your application dependencies here; they belong
+        // in the individual module build.gradle files
+    }
+}
+
+allprojects {
+    repositories {
+        jcenter()
+    }
+}
+
+task clean(type: Delete) {
+    delete rootProject.buildDir
+}
+
+ext{
+    minSdk = 16
+    targetSdk = 24
+    buildToolsVersion = '24.0.2'
+    compileSdkVersion = 24
+    appcompat7Version = '24.2.1'
+
+    versionCode = 100
+    versionName = '1.0.0'
+
+    javaSourceCompatibility = JavaVersion.VERSION_1_8
+    javaTargetCompatibility = JavaVersion.VERSION_1_8
+
+    weexSdkVersion = '0.8.0.1'
+    weexInspectorVersion = '0.0.8.1'
+
+    dagger2Version = '2.7'
+
+    butterknifeVersion = '8.4.0'
+
+    annotatedAdapter = '1.1.1'
+
+    retrofitVersion = '2.1.0'
+    okhttpVersion ='3.4.1'
+
+    picassoVersion = '2.5.2'
+    qiniuVersion = '7.2.+'
+
+    rxjavaVersion = '1.1.6'
+    rxandroidVersion = '1.2.1'
+    rxbindingVersion = '0.4.0'
+
+    mosbyVersion = '2.0.+'
+}

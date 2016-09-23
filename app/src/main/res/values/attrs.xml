@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <declare-styleable name="PrintView">
+        <!-- Icon text. -->
+        <attr name="iconText" format="string"/>
+        <!-- Icon text based on char code. -->
+        <attr name="iconCode" format="integer"/>
+        <!-- Color of the icon. -->
+        <attr name="iconColor" format="color"/>
+        <!-- Size of the icon. -->
+        <attr name="iconSize" format="dimension"/>
+        <!-- File name of the font in the assets directory. -->
+        <attr name="iconFont" format="string"/>
+    </declare-styleable>
+
+    <declare-styleable name="UnderLineEditText">
+        <attr name="line_width" format="dimension" />
+        <attr name="line_color" format="color" />
+    </declare-styleable>
+</resources>

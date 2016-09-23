@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item name="rl_title_bar" type="id" />
+    <item name="text_title_left" type="id" />
+    <item name="text_title_center" type="id" />
+    <item name="text_title_right" type="id" />
+    <item name="realtabcontent" type="id" />
+    <item name="tab_title" type="id" />
+    <item name="container" type="id" />
+    <item name="activity_root" type="id" />
+    <item name="text_find_password" type="id" />
+    <item name="btn_confirm_login" type="id" />
+    <item name="img_wechat" type="id" />
+    <item name="text_register" type="id" />
+    <item name="edt_input_code" type="id" />
+    <item name="edt_input_password" type="id" />
+    <item name="edt_input_username" type="id" />
+</resources>
