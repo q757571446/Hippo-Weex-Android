@@ -2,20 +2,27 @@ package com.example.hippoweex.ui.view.delegate.impl;
 
 import android.content.Context;
 import android.net.Uri;
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 
 import com.example.core.utils.GsonTools;
 import com.example.hippoweex.ui.view.IWeexView;
 import com.example.hippoweex.ui.view.delegate.BaseWeexDelegateCallback;
+import com.example.hippoweex.weex.WeexManager;
 import com.example.hippoweex.weex.adapter.NormalTitleAdapter;
 import com.taobao.weex.IWXRenderListener;
+import com.taobao.weex.WXEnvironment;
 import com.taobao.weex.WXSDKEngine;
 import com.taobao.weex.WXSDKInstance;
+import com.taobao.weex.adapter.IWXHttpAdapter;
 import com.taobao.weex.appfram.navigator.IActivityNavBarSetter;
 import com.taobao.weex.common.WXRenderStrategy;
+import com.taobao.weex.common.WXRequest;
+import com.taobao.weex.http.WXHttpUtil;
 import com.taobao.weex.utils.WXFileUtils;
 
+import java.lang.reflect.Constructor;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -137,7 +144,42 @@ public class WeexInternalDelegate implements IWXRenderListener, Runnable {
     }
 
     private void renderPagerFromNet(String pageName, String url, Map<String, Object> options, String jsonInitData, int containerWidth, int containerHeight){
-        getInstance().renderByUrl(pageName,url,options,jsonInitData,containerWidth,containerHeight, WXRenderStrategy.APPEND_ASYNC);
+        //网络框架retrofit只用来处理json形式的返回数据，而渲染界面返回的是js，不能转化会报错，所以使用官方的默认adapter用来加载界面
+        Uri uri=Uri.parse(url);
+        if(uri!=null && TextUtils.equals(uri.getScheme(),"file")){
+            getInstance().render(pageName, WXFileUtils.loadAsset(assembleFilePath(uri), getInstance().getContext()),options,jsonInitData,containerWidth,containerHeight, WXRenderStrategy.APPEND_ASYNC);
+            return;
+        }
+
+        IWXHttpAdapter adapter= WeexManager.getInstance().getDefaultHttpAdapter();
+
+        WXRequest wxRequest = new WXRequest();
+        wxRequest.url = url;
+        if (wxRequest.paramMap == null) {
+            wxRequest.paramMap = new HashMap<String, String>();
+        }
+        wxRequest.paramMap.put("user-agent", WXHttpUtil.assembleUserAgent(getInstance().getContext(), WXEnvironment.getConfig()));
+        IWXHttpAdapter.OnHttpListener wxHttpListener = getWXHttpListener(pageName, options, jsonInitData, containerWidth, containerHeight, WXRenderStrategy.APPEND_ASYNC, System.currentTimeMillis());
+        adapter.sendRequest(wxRequest,wxHttpListener);
+    }
+
+    private IWXHttpAdapter.OnHttpListener getWXHttpListener(String pageName, Map<String, Object> options, String jsonInitData, Integer containerWidth, Integer containerHeight, WXRenderStrategy flag, Long time){
+        try {
+            Class<? extends WXSDKInstance> outClazz = getInstance().getClass();
+            Class<?>[] innerClazzs = outClazz.getDeclaredClasses();
+            for (Class innerClazz : innerClazzs) {
+                Class<IWXHttpAdapter.OnHttpListener> onHttpListenerClass = IWXHttpAdapter.OnHttpListener.class;
+                if (onHttpListenerClass.isAssignableFrom(innerClazz)) {
+                    Constructor[] declaredConstructors = innerClazz.getDeclaredConstructors();
+                    declaredConstructors[0].setAccessible(true);
+                    Object o = declaredConstructors[0].newInstance(getInstance(), pageName, options, jsonInitData, containerWidth, containerHeight, flag, time);
+                    return (IWXHttpAdapter.OnHttpListener) o;
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        };
+        return null;
     }
 
     private void renderPagerFromFile(String pageName, String path, Map<String, Object> options, String jsonInitData, int containerWidth, int containerHeight){
@@ -145,6 +187,13 @@ public class WeexInternalDelegate implements IWXRenderListener, Runnable {
     }
 
     private void renderPagerFromAsset(String pageName, Uri uri, Map<String, Object> options, String jsonInitData, int containerWidth, int containerHeight){
+        String assetPath = assembleFilePath(uri);
+        Context context = getInstance().getContext();
+        String template = WXFileUtils.loadAsset(assetPath, context);
+        getInstance().render(pageName,template,options,jsonInitData,containerWidth,containerHeight,WXRenderStrategy.APPEND_ASYNC);
+    }
+
+    private String assembleFilePath(Uri uri) {
         List<String> pathSegments = uri.getPathSegments();
         StringBuilder sb = new StringBuilder();
         for(int i=0; i<pathSegments.size(); i++){
@@ -154,13 +203,10 @@ public class WeexInternalDelegate implements IWXRenderListener, Runnable {
             }else{
                 sb.append(p);
             }
-            String assetPath = sb.toString();
-            Context context = getInstance().getContext();
-            String template = WXFileUtils.loadAsset(assetPath, context);
-
-            getInstance().render(pageName,template,options,jsonInitData,containerWidth,containerHeight,WXRenderStrategy.APPEND_ASYNC);
         }
+        return sb.toString();
     }
+
 
     @Override
     public void onViewCreated(WXSDKInstance instance, View view) {

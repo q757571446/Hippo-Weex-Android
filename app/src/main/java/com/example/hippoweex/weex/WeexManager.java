@@ -14,12 +14,28 @@ import com.example.hippoweex.weex.module.NavigatorModule;
 import com.taobao.weex.InitConfig;
 import com.taobao.weex.WXEnvironment;
 import com.taobao.weex.WXSDKEngine;
+import com.taobao.weex.adapter.DefaultWXHttpAdapter;
+import com.taobao.weex.adapter.IWXHttpAdapter;
 import com.taobao.weex.common.WXException;
 
 /**
  * Created by dell on 2016/9/20.
  */
 public class WeexManager {
+
+    private DefaultWXHttpAdapter adapter;
+    private static final WeexManager manager = new WeexManager();
+
+    private WeexManager(){
+        adapter = new DefaultWXHttpAdapter();
+    }
+
+    public static final WeexManager getInstance(){
+        return manager;
+    }
+    public IWXHttpAdapter getDefaultHttpAdapter() {
+        return adapter;
+    }
 
     public static void register(Application application){
         if(Config.DEBUG)
@@ -59,4 +75,6 @@ public class WeexManager {
             WXEnvironment.sDebugWsUrl = "ws://" + host + ":8088/debugProxy/native";
         }
     }
+
+
 }

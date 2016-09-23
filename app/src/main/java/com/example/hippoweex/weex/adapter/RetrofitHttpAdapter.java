@@ -2,20 +2,24 @@ package com.example.hippoweex.weex.adapter;
 
 import android.content.Context;
 import android.text.TextUtils;
+import android.widget.Toast;
 
 import com.example.core.HttpResultFunc;
 import com.example.core.HttpSubscriber;
 import com.example.core.exception.ApiException;
 import com.example.core.exception.ERROR;
 import com.example.core.manager.UserManager;
+import com.example.core.model.Result;
 import com.example.core.network.retrofit.OkHttpUtils;
 import com.example.core.network.retrofit.RetrofitUtils;
 import com.example.core.utils.GsonTools;
 import com.example.hippoweex.Navigator;
 import com.example.hippoweex.ui.view.SimpleBackPage;
-import com.example.hippoweex.weex.WeexIntercepter;
 import com.taobao.weex.adapter.IWXHttpAdapter;
 import com.taobao.weex.common.WXRequest;
+import com.taobao.weex.common.WXResponse;
+
+import org.json.JSONObject;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -37,7 +41,6 @@ import rx.schedulers.Schedulers;
 public class RetrofitHttpAdapter implements IWXHttpAdapter {
     private Navigator navigator;
     private Context context;
-    private OnHttpListener listener;
 
     public RetrofitHttpAdapter(Context context){
         this.context = context;
@@ -46,7 +49,7 @@ public class RetrofitHttpAdapter implements IWXHttpAdapter {
 
     public WXHttpService getService(OnHttpListener listener) {
         OkHttpClient okHttpClient = OkHttpUtils.getDefaultBuild(context)
-                .addInterceptor(new WeexIntercepter(listener))
+//                .addInterceptor(new WeexIntercepter(listener))
                 .build();
         return RetrofitUtils.getDefaultBuild(context).client(okHttpClient).build().create(WXHttpService.class);
     }
@@ -62,14 +65,17 @@ public class RetrofitHttpAdapter implements IWXHttpAdapter {
          *  @QueryMap Map<String,Object> querys
          */
         @POST
-        Observable<String> postRequest(@Url String url, @HeaderMap Map<String, String> headers, @Body Map<String, Object> params);
+        Observable<Result<JSONObject>> postRequest(@Url String url, @HeaderMap Map<String, String> headers, @Body Map<String, Object> params);
 
         @GET
-        Observable<String> getRequest(@Url String url, @HeaderMap Map<String, String> headers, @QueryMap Map<String, Object> params);
+        Observable<Result<JSONObject>> getRequest(@Url String url, @HeaderMap Map<String, String> headers, @QueryMap Map<String, Object> params);
     }
     @Override
     public void sendRequest(WXRequest request, OnHttpListener listener) {
-        this.listener = listener;
+        if(listener != null){
+            listener.onHttpStart();
+        }
+        WXResponse response = new WXResponse();
 
         WXHttpService requestApi = getService(listener);
         //添加请求消息头
@@ -81,7 +87,6 @@ public class RetrofitHttpAdapter implements IWXHttpAdapter {
             params = GsonTools.convertJsonToNestMap(request.body);
         }
 
-
         //默认所有接口都会添加token
         headers.put("x-token", UserManager.readUserToken(context).toString());
         //所有请求默认附加token,没有Token默认跳转首页
@@ -90,20 +95,28 @@ public class RetrofitHttpAdapter implements IWXHttpAdapter {
             requestApi.postRequest(request.url, headers, params)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .onErrorResumeNext(new HttpResultFunc<Observable<? extends String>>())
-                    .subscribe(new WeexSubscriber());
+                    .onErrorResumeNext(new HttpResultFunc<Observable<? extends Result<JSONObject>>>())
+                    .subscribe(new WeexSubscriber(response, listener));
         }else {
             //默认get
             requestApi.getRequest(request.url, headers, params)
                     .subscribeOn(Schedulers.io())
                     .observeOn(AndroidSchedulers.mainThread())
-                    .onErrorResumeNext(new HttpResultFunc<Observable<? extends String>>())
-                    .subscribe(new WeexSubscriber());
+                    .onErrorResumeNext(new HttpResultFunc<Observable<? extends Result<JSONObject>>>())
+                    .subscribe(new WeexSubscriber(response, listener));
         }
     }
 
+    //异常流分发
+    class WeexSubscriber extends HttpSubscriber<Result<JSONObject>> {
+        private OnHttpListener listener;
+        private WXResponse response;
 
-    class WeexSubscriber extends HttpSubscriber<String> {
+        public WeexSubscriber(WXResponse response, OnHttpListener listener) {
+            this.response = response;
+            this.listener = listener;
+        }
+
         @Override
         protected void onError(ApiException ex) {
             if (ex.getCode() == ERROR.TOKEN_EXPIRE) {
@@ -119,7 +132,12 @@ public class RetrofitHttpAdapter implements IWXHttpAdapter {
         }
 
         @Override
-        public void onNext(String jsonObject) {
+        public void onNext(Result<JSONObject> result) {
+            response.statusCode = String.valueOf(result.getCode());
+            response.originalData=result.getData().toString().getBytes();
+            if(listener!=null){
+                listener.onHttpFinish(response);
+            }
         }
 
         protected void onTokenExpire(ApiException ex) {
@@ -128,7 +146,11 @@ public class RetrofitHttpAdapter implements IWXHttpAdapter {
         }
 
         protected void onApiException(ApiException ex) {
-
+            //本地拦截异常信息流,打印
+            Toast.makeText(context,ex.getDisplayMessage(),Toast.LENGTH_SHORT).show();
+            response.statusCode = "-1";
+            response.errorCode=String.valueOf(ex.getCode());
+            response.errorMsg=ex.getDisplayMessage();
         }
     }
 
@@ -137,7 +159,4 @@ public class RetrofitHttpAdapter implements IWXHttpAdapter {
         return this.context;
     }
 
-    public OnHttpListener getListener(){
-        return this.listener;
-    }
 }

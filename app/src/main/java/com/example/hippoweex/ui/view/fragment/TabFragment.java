@@ -49,7 +49,7 @@ public class TabFragment extends NativeFragment {
     protected List<TabAdapter.TabInfo> getTabList(){
         List<TabAdapter.TabInfo> list = new ArrayList<>();
 
-        ArrayList<String> tabUri = getArguments().getStringArrayList("  ");
+        ArrayList<String> tabUri = getArguments().getStringArrayList("tabUri");
         if(tabUri != null && tabUri.size() > 0){
             for (String uri : tabUri){
                 Uri parse = Uri.parse(uri);

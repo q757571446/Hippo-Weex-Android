@@ -28,7 +28,8 @@ public class ErrorDeterminer {
 
     public static ApiException handleException(Throwable e){
         ApiException ex;
-        e.printStackTrace();
+        //打印拦截的异常信息，便于查找原因
+//        e.printStackTrace();
         if (e instanceof HttpException){             //HTTP错误
             HttpException httpException = (HttpException) e;
             switch(httpException.code()){
@@ -39,7 +40,6 @@ public class ErrorDeterminer {
                 case REQUIRE_PARAMETER:
                     ex = new ApiException(e, ERROR.LACK_PARAMETER);
                     ex.setDisplayMessage("缺少请求参数");
-                    ex.printStackTrace();
                     break;
                 case FORBIDDEN:
                 case NOT_FOUND:
